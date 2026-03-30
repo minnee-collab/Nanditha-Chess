@@ -9,16 +9,27 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-slate-900">
     <div id="root"></div>
+
     <script type="text/babel">
         const App = () => {
             return (
-                <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center font-sans">
-                    <h1 className="text-4xl font-bold mb-4">Nanditha Chess</h1>
-                    <p className="text-xl text-slate-400">About me & Chess training</p>
-                    <div className="mt-8 p-6 bg-slate-800 rounded-xl shadow-xl border border-slate-700">
-                        <p>Site is officially live! Your React code goes here.</p>
+                <div className="min-h-screen flex flex-col items-center justify-center text-white font-sans p-4">
+                    <div className="max-w-2xl w-full bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700 text-center">
+                        <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+                            Nanditha Chess
+                        </h1>
+                        <p className="text-slate-400 text-xl mb-8">About me & Chess training</p>
+                        
+                        <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-700/50">
+                            <p className="text-blue-300 mb-2 font-mono">Status: Successfully Deployed</p>
+                            <p className="text-slate-300 text-sm">Your interactive chess training environment is ready.</p>
+                        </div>
+
+                        <button className="mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-full font-bold transition-all transform hover:scale-105">
+                            Start Learning
+                        </button>
                     </div>
                 </div>
             );
