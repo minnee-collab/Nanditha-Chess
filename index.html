@@ -14,16 +14,18 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Destructure hooks from React
         const { useState, useEffect, useRef } = React;
-        
-        // Define Lucide components for the browser
-        const { 
-            User, BookOpen, GraduationCap, MessageSquare, Award, 
-            Star, Trophy, ArrowRight, CheckCircle2, ChevronRight, Menu, X 
-        } = lucide;
 
         const App = () => {
+          // 1. Safety Check: Wait for Lucide icons to load from the global window object
+          if (!window.lucide) return <div className="min-h-screen bg-[#070d19]" />;
+
+          const { 
+              User, BookOpen, GraduationCap, MessageSquare, Award, 
+              Star, Trophy, ArrowRight, CheckCircle2, ChevronRight, Menu, X 
+          } = window.lucide;
+
+          // 2. State and Refs
           const [activeTab, setActiveTab] = useState('home');
           const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
           const [puzzleSolved, setPuzzleSolved] = useState(false);
@@ -217,32 +219,4 @@
                                 return (
                                   <div key={pos} onClick={() => pos === 'e5' && handleMoveAttempt('Ke6')} className={`flex items-center justify-center text-4xl select-none ${isDark ? 'bg-slate-800' : 'bg-slate-700/30'} ${pos === 'e5' ? 'cursor-pointer hover:bg-rose-500/30' : ''}`}>
                                     {pieces[pos] && <span className={pieces[pos] === '♚' ? 'text-black' : 'text-white'}>{pieces[pos]}</span>}
-                                    {puzzleSolved && pos === 'e6' && <div className="absolute inset-0 bg-rose-500/20 flex items-center justify-center text-rose-400 font-black text-[10px]">Ke6!</div>}
-                                  </div>
-                                );
-                              })
-                            )}
-                          </div>
-                      </div>
-                    </section>
-                  </div>
-                )}
-                {activeTab !== 'home' && (
-                  <div className="py-20 text-center space-y-8">
-                     <TiltCard color="purple" className="max-w-2xl mx-auto p-12">
-                        <h2 className="text-4xl font-black text-white uppercase mb-4">{activeTab} section</h2>
-                        <p className="text-slate-400 text-lg mb-8">This module is currently being optimized.</p>
-                        <button onClick={() => setActiveTab('home')} className="px-8 py-3 bg-rose-500 text-white font-black rounded-xl">Return Home</button>
-                     </TiltCard>
-                  </div>
-                )}
-              </main>
-            </div>
-          );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html> 
+                                    {puzzleSolved && pos === 'e6
