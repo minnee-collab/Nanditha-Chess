@@ -3,36 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nanditha Chess</title>
+    <title>Nanditha V | FIDE WCM Mentor</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-900">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const App = () => {
-            return (
-                <div className="min-h-screen flex flex-col items-center justify-center text-white font-sans p-4">
-                    <div className="max-w-2xl w-full bg-slate-800 rounded-3xl p-8 shadow-2xl border border-slate-700 text-center">
-                        <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-                            Nanditha Chess
-                        </h1>
-                        <p className="text-slate-400 text-xl mb-8">About me & Chess training</p>
-                        
-                        <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-700/50">
-                            <p className="text-blue-300 mb-2 font-mono">Status: Successfully Deployed</p>
-                            <p className="text-slate-300 text-sm">Your interactive chess training environment is ready.</p>
-                        </div>
+        // Destructure hooks from React
+        const { useState, useEffect, useRef } = React;
+        
+        // Define Lucide components for the browser
+        const { 
+            User, BookOpen, GraduationCap, MessageSquare, Award, 
+            Star, Trophy, ArrowRight, CheckCircle2, ChevronRight, Menu, X 
+        } = lucide;
 
-                        <button className="mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-full font-bold transition-all transform hover:scale-105">
-                            Start Learning
-                        </button>
-                    </div>
-                </div>
+        const App = () => {
+          const [activeTab, setActiveTab] = useState('home');
+          const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+          const [puzzleSolved, setPuzzleSolved] = useState(false);
+          const [puzzleError, setPuzzleError] = useState(false);
+          
+          const [isHovering, setIsHovering] = useState(false);
+          const [cursorColor, setCursorColor] = useState('rgba(244, 63, 94, 0.6)');
+
+          const dotRef = useRef(null);
+          const heartRef = useRef(null);
+          const canvasRef = useRef(null);
+          const mousePos = useRef({ x: 0, y: 0 });
+          const heartPos = useRef({ x: 0, y: 0 });
+          const particles = useRef([]);
+
+          useEffect(() => {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            
+            const resizeCanvas = () => {
+              canvas.width = window.innerWidth;
+              canvas.height = window.innerHeight;
+            };
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            const handleMouseMove = (e) => {
+              mousePos.current = { x: e.clientX, y: e.clientY };
+              if (dotRef.current) {
+                dotRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+              }
+            };
+
+            const handleMouseDown = (e) => {
+              const colors = ['#f43f5e', '#fb7185', '#fda4af', '#9f1239', '#ffffff'];
+              for (let i = 0; i < 12; i++) {
+                particles.current.push({
+                  x: e.clientX,
+                  y: e.clientY,
+                  vx: (Math.random() - 0.5) * 8,
+                  vy: (Math.random() - 0.5) * 8,
+                  radius: Math.random() * 4 + 2,
+                  color: colors[Math.floor(Math.random() * colors.length)],
+                  alpha: 1,
+                  life: 1
+                });
+              }
+            };
+
+            let rafId;
+            const render = () => {
+              heartPos.current.x += (mousePos.current.x - heartPos.current.x) * 0.4;
+              heartPos.current.y += (mousePos.current.y - heartPos.current.y) * 0.4;
+
+              if (heartRef.current) {
+                heartRef.current.style.transform = `translate3d(${heartPos.current.x}px, ${heartPos.current.y}px, 0) translate(-50%, -50%) ${isHovering ? 'scale(1.2)' : 'scale(1)'}`;
+              }
+
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              
+              for (let i = particles.current.length - 1; i >= 0; i--) {
+                const p = particles.current[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.02;
+                p.radius *= 0.96;
+                if (p.alpha <= 0 || p.radius < 0.5) {
+                  particles.current.splice(i, 1);
+                  continue;
+                }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.fill();
+              }
+              rafId = requestAnimationFrame(render);
+            };
+
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mousedown', handleMouseDown);
+            rafId = requestAnimationFrame(render);
+
+            return () => {
+              window.removeEventListener('mousemove', handleMouseMove);
+              window.removeEventListener('mousedown', handleMouseDown);
+              window.removeEventListener('resize', resizeCanvas);
+              cancelAnimationFrame(rafId);
+            };
+          }, [isHovering]);
+
+          const handleMoveAttempt = (move) => {
+            if (move === 'Ke6') {
+              setPuzzleSolved(true);
+              setPuzzleError(false);
+            } else {
+              setPuzzleError(true);
+              setTimeout(() => setPuzzleError(false), 2000);
+            }
+          };
+
+          const TiltCard = ({ children, className = "", color = "rose", disableTilt = false }) => {
+            const cardRef = useRef(null);
+            const [tilt, setTilt] = useState({ x: 0, y: 0 });
+            const [glow, setGlow] = useState({ x: 50, y: 50 });
+
+            const handleMove = (e) => {
+              const rect = cardRef.current.getBoundingClientRect();
+              const x = (e.clientX - rect.left) / rect.width;
+              const y = (e.clientY - rect.top) / rect.height;
+              if (!disableTilt) {
+                const rotateY = (x - 0.5) * 8;
+                const rotateX = (0.5 - y) * 8;
+                setTilt({ x: rotateX, y: rotateY });
+              }
+              setGlow({ x: x * 100, y: y * 100 });
+            };
+
+            const colors = {
+              rose: 'rgba(244, 63, 94, 0.4)',
+              emerald: 'rgba(16, 185, 129, 0.4)',
+              blue: 'rgba(59, 130, 246, 0.4)',
+              purple: 'rgba(168, 85, 247, 0.4)',
+              white: 'rgba(255, 255, 255, 0.1)'
+            };
+
+            return (
+              <div ref={cardRef} onMouseMove={handleMove} onMouseEnter={() => { setIsHovering(true); setCursorColor(colors[color] || colors.rose); }} onMouseLeave={() => { setTilt({ x: 0, y: 0 }); setIsHovering(false); }}
+                style={{ transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`, transition: 'transform 0.15s ease-out' }}
+                className={`relative overflow-hidden group border border-white/10 bg-slate-900/40 backdrop-blur-md rounded-[2rem] ${className}`}
+              >
+                <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{ background: `radial-gradient(circle at ${glow.x}% ${glow.y}%, ${colors[color] || colors.rose}, transparent 60%)` }}
+                />
+                <div className="relative z-10">{children}</div>
+              </div>
             );
+          };
+
+          const navItems = [
+            { id: 'home', label: 'Home', icon: <Trophy size={18} /> },
+            { id: 'about', label: 'About Me', icon: <User size={18} /> },
+            { id: 'classroom', label: 'Classroom', icon: <GraduationCap size={18} /> },
+            { id: 'courses', label: 'Courses', icon: <BookOpen size={18} /> },
+            { id: 'contact', label: 'Join / Inquiry', icon: <MessageSquare size={18} /> },
+          ];
+
+          return (
+            <div className="min-h-screen bg-[#070d19] text-slate-200 selection:bg-rose-500/30 overflow-x-hidden cursor-none">
+              <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[9997]" />
+              <div ref={dotRef} className="fixed top-0 left-0 w-1.5 h-1.5 bg-rose-400 rounded-full pointer-events-none z-[9999]" />
+              <div ref={heartRef} className="fixed top-0 left-0 pointer-events-none z-[9998] flex items-center justify-center transition-all duration-300 ease-out"
+                style={{ width: isHovering ? '54px' : '34px', height: isHovering ? '54px' : '34px', backgroundColor: cursorColor, clipPath: 'path("M24 43.3c-1.1 0-2.1-.4-3-1.1L5.6 27.8c-3.1-2.9-4.7-6.9-4.7-11.1C.9 8.2 7.7 1.5 16.2 1.5c4.1 0 7.9 1.6 10.8 4.6 2.9-3 6.7-4.6 10.8-4.6 8.5 0 15.3 6.7 15.3 15.2 0 4.2-1.6 8.2-4.7 11.1L33 42.2c-.9.7-1.9 1.1-3 1.1z")', boxShadow: isHovering ? `0 0 25px ${cursorColor}` : 'none' }}
+              />
+
+              <nav className="sticky top-0 z-50 border-b border-white/5 bg-[#070d19]/60 backdrop-blur-xl">
+                <div className="max-w-7xl mx-auto px-6 flex justify-between h-20 items-center">
+                  <div className="flex items-center gap-3 group" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+                    <div className="bg-rose-500 p-2 rounded-xl text-white transition-transform group-hover:scale-110"><Trophy size={24} /></div>
+                    <div><h1 className="text-lg font-black tracking-tighter text-white uppercase">Nanditha V</h1><p className="text-[10px] font-bold text-rose-400 uppercase tracking-[0.2em]">FIDE WCM Mentor</p></div>
+                  </div>
+                  <div className="hidden md:flex items-center space-x-1">
+                    {navItems.map(item => (
+                      <button key={item.id} onClick={() => setActiveTab(item.id)} onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)} className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center gap-2 ${activeTab === item.id ? 'bg-white/10 text-rose-400' : 'text-slate-400 hover:text-white'}`}>{item.label}</button>
+                    ))}
+                  </div>
+                </div>
+              </nav>
+
+              <main className="relative z-10 max-w-7xl mx-auto px-6 py-12">
+                {activeTab === 'home' && (
+                  <div className="space-y-24">
+                    <section className="grid md:grid-cols-2 gap-16 items-center">
+                      <TiltCard color="white" className="p-8 border-none bg-transparent backdrop-blur-none">
+                        <div className="space-y-8">
+                          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-rose-400 text-xs font-bold uppercase">Accepting International Students</div>
+                          <h1 className="text-6xl font-black text-white leading-tight">Elevate Your <span className="text-rose-500">Chess IQ.</span></h1>
+                          <p className="text-xl text-slate-400 leading-relaxed font-medium">Learn from a Woman Candidate Master. Practical strategies and professional analysis.</p>
+                          <button onClick={() => setActiveTab('contact')} className="px-8 py-4 bg-rose-500 text-white rounded-2xl font-black flex items-center gap-2 hover:bg-rose-400 transition-all">Start Training <ArrowRight size={20} /></button>
+                        </div>
+                      </TiltCard>
+                      <div className="relative border border-white/10 bg-slate-900/80 backdrop-blur-md rounded-[2.5rem] p-8">
+                          <h3 className="font-black text-xl text-white mb-4">Interactive Training</h3>
+                          <div className="grid grid-cols-8 border-2 border-white/5 rounded-lg overflow-hidden aspect-square bg-slate-950">
+                            {[8, 7, 6, 5, 4, 3, 2, 1].map((rank, ridx) => 
+                              ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((file, fidx) => {
+                                const pos = `${file}${rank}`;
+                                const isDark = (ridx + fidx) % 2 === 1;
+                                const pieces = { 'e5': '♔', 'd5': '♙', 'e7': '♚' };
+                                return (
+                                  <div key={pos} onClick={() => pos === 'e5' && handleMoveAttempt('Ke6')} className={`flex items-center justify-center text-4xl select-none ${isDark ? 'bg-slate-800' : 'bg-slate-700/30'} ${pos === 'e5' ? 'cursor-pointer hover:bg-rose-500/30' : ''}`}>
+                                    {pieces[pos] && <span className={pieces[pos] === '♚' ? 'text-black' : 'text-white'}>{pieces[pos]}</span>}
+                                    {puzzleSolved && pos === 'e6' && <div className="absolute inset-0 bg-rose-500/20 flex items-center justify-center text-rose-400 font-black text-[10px]">Ke6!</div>}
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                      </div>
+                    </section>
+                  </div>
+                )}
+                {activeTab !== 'home' && (
+                  <div className="py-20 text-center space-y-8">
+                     <TiltCard color="purple" className="max-w-2xl mx-auto p-12">
+                        <h2 className="text-4xl font-black text-white uppercase mb-4">{activeTab} section</h2>
+                        <p className="text-slate-400 text-lg mb-8">This module is currently being optimized.</p>
+                        <button onClick={() => setActiveTab('home')} className="px-8 py-3 bg-rose-500 text-white font-black rounded-xl">Return Home</button>
+                     </TiltCard>
+                  </div>
+                )}
+              </main>
+            </div>
+          );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
